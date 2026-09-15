@@ -1,0 +1,57 @@
+{
+    "business_health": {
+        "status": "Needs Attention",
+        "total_sales": 62605608.01,
+        "total_profit": 18573015.71,
+        "profit_margin": 29.67,
+        "total_orders": 49955
+    },
+    "risks": [
+        {
+            "topic": "Margin Risk",
+            "finding": "Electronics has the lowest profit margin at 18.81%.",
+            "recommendation": "Review pricing, discounts, supplier costs and product-level profitability."
+        },
+        {
+            "topic": "Regional Margin Risk",
+            "finding": "East has the lowest regional profit margin at 29.18%.",
+            "recommendation": "Investigate regional pricing, costs, discounts and sales mix."
+        }
+    ],
+    "opportunities": [
+        {
+            "topic": "High-Margin Opportunity",
+            "finding": "Home & Kitchen has the highest profit margin at 34.86%.",
+            "recommendation": "Prioritize high-margin products and expand profitable offerings."
+        },
+        {
+            "topic": "Top Product",
+            "finding": "Basic Wallet generates the highest sales among the top products at ₹1,119,565.68.",
+            "recommendation": "Maintain availability and prioritize this product in sales and retention strategies."
+        },
+        {
+            "topic": "Product Profitability",
+            "finding": "Premium Laptop has a 90.62% profit margin.",
+            "recommendation": "Evaluate high-margin products for stronger promotion and portfolio expansion."
+        },
+        {
+            "topic": "High-Value Customer",
+            "finding": "Noah Brown generated ₹374,001.39 in sales.",
+            "recommendation": "Prioritize retention, repeat purchases and targeted offers for high-value customers."
+        },
+        {
+            "topic": "Regional Opportunity",
+            "finding": "West has the highest valid regional margin at 29.94%.",
+            "recommendation": "Study the regional sales mix and replicate successful practices where appropriate."
+        }
+    ],
+    "recommendations": [
+        "Review pricing, discounts, supplier costs and product-level profitability.",
+        "Investigate regional pricing, costs, discounts and sales mix.",
+        "Prioritize high-margin products and expand profitable offerings.",
+        "Maintain availability and prioritize this product in sales and retention strategies.",
+        "Evaluate high-margin products for stronger promotion and portfolio expansion.",
+        "Prioritize retention, repeat purchases and targeted offers for high-value customers.",
+        "Study the regional sales mix and replicate successful practices where appropriate."
+    ]
+}

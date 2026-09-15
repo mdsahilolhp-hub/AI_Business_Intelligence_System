@@ -1,0 +1,213 @@
+{
+    "overall": {
+        "total_sales": 62605608.01,
+        "total_profit": 18573015.71,
+        "profit_margin": 29.67,
+        "total_quantity": 142504.0,
+        "total_orders": 49955
+    },
+    "category_performance": [
+        {
+            "Category": "Home & Kitchen",
+            "sales": 8988859.72,
+            "profit": 3133216.12,
+            "profit_margin": 34.86
+        },
+        {
+            "Category": "Accessories",
+            "sales": 13114146.57,
+            "profit": 4467391.83,
+            "profit_margin": 34.07
+        },
+        {
+            "Category": "Clothing",
+            "sales": 14284142.89,
+            "profit": 4557868.39,
+            "profit_margin": 31.91
+        },
+        {
+            "Category": "Furniture",
+            "sales": 11708554.28,
+            "profit": 3684971.37,
+            "profit_margin": 31.47
+        },
+        {
+            "Category": "Electronics",
+            "sales": 14509904.55,
+            "profit": 2729568.0,
+            "profit_margin": 18.81
+        }
+    ],
+    "top_customers": [
+        {
+            "Customer_Name": "Noah Brown",
+            "sales": 374001.39,
+            "profit": 134909.2
+        },
+        {
+            "Customer_Name": "Aditya Sharma",
+            "sales": 352052.7,
+            "profit": 113846.36
+        },
+        {
+            "Customer_Name": "Aditya Johnson",
+            "sales": 345657.79,
+            "profit": 111641.34
+        },
+        {
+            "Customer_Name": "Aarav Rao",
+            "sales": 343160.0,
+            "profit": 106797.89
+        },
+        {
+            "Customer_Name": "James Patel",
+            "sales": 342313.42,
+            "profit": 126555.84
+        },
+        {
+            "Customer_Name": "Mia Verma",
+            "sales": 329126.44,
+            "profit": 104201.02
+        },
+        {
+            "Customer_Name": "Kavya Singh",
+            "sales": 326393.08,
+            "profit": 132427.45
+        },
+        {
+            "Customer_Name": "Vikram Rao",
+            "sales": 326070.86,
+            "profit": 104334.66
+        },
+        {
+            "Customer_Name": "Vikram Mehta",
+            "sales": 324669.0,
+            "profit": 95408.36
+        },
+        {
+            "Customer_Name": "James Davis",
+            "sales": 322047.51,
+            "profit": 114545.35
+        }
+    ],
+    "top_products": [
+        {
+            "Product_Name": "Basic Wallet",
+            "sales": 1119565.68,
+            "profit": 719333.22,
+            "profit_margin": 64.25
+        },
+        {
+            "Product_Name": "Basic Backpack",
+            "sales": 973918.17,
+            "profit": 866139.53,
+            "profit_margin": 88.93
+        },
+        {
+            "Product_Name": "Premium Laptop",
+            "sales": 963681.46,
+            "profit": 873323.06,
+            "profit_margin": 90.62
+        },
+        {
+            "Product_Name": "Standard Sofa",
+            "sales": 957052.53,
+            "profit": 848327.16,
+            "profit_margin": 88.64
+        },
+        {
+            "Product_Name": "Basic Watch",
+            "sales": 956476.98,
+            "profit": 692926.14,
+            "profit_margin": 72.45
+        },
+        {
+            "Product_Name": "Pro Blender",
+            "sales": 951937.07,
+            "profit": 420986.51,
+            "profit_margin": 44.22
+        },
+        {
+            "Product_Name": "Pro Tablet",
+            "sales": 947875.87,
+            "profit": 365787.31,
+            "profit_margin": 38.59
+        },
+        {
+            "Product_Name": "Standard Sneakers",
+            "sales": 942878.99,
+            "profit": 789703.13,
+            "profit_margin": 83.75
+        },
+        {
+            "Product_Name": "Pro Sofa",
+            "sales": 915765.01,
+            "profit": 704176.68,
+            "profit_margin": 76.89
+        },
+        {
+            "Product_Name": "Basic Cookware Set",
+            "sales": 907495.74,
+            "profit": 672802.86,
+            "profit_margin": 74.14
+        }
+    ],
+    "regional_performance": [
+        {
+            "Region": "Unknown",
+            "sales": 161749.21,
+            "profit": 52083.14,
+            "profit_margin": 32.2
+        },
+        {
+            "Region": "West",
+            "sales": 15500370.91,
+            "profit": 4640325.65,
+            "profit_margin": 29.94
+        },
+        {
+            "Region": "South",
+            "sales": 15717035.07,
+            "profit": 4675017.14,
+            "profit_margin": 29.74
+        },
+        {
+            "Region": "North",
+            "sales": 16872688.14,
+            "profit": 5016663.64,
+            "profit_margin": 29.73
+        },
+        {
+            "Region": "East",
+            "sales": 14353764.68,
+            "profit": 4188926.14,
+            "profit_margin": 29.18
+        }
+    ],
+    "channel_performance": [
+        {
+            "Sales_Channel": "Website",
+            "sales": 23698174.86,
+            "profit": 7022996.31,
+            "profit_margin": 29.64
+        },
+        {
+            "Sales_Channel": "Mobile App",
+            "sales": 17014637.26,
+            "profit": 5096296.58,
+            "profit_margin": 29.95
+        },
+        {
+            "Sales_Channel": "Marketplace",
+            "sales": 12733618.13,
+            "profit": 3788474.76,
+            "profit_margin": 29.75
+        },
+        {
+            "Sales_Channel": "Store",
+            "sales": 9159177.76,
+            "profit": 2665248.06,
+            "profit_margin": 29.1
+        }
+    ]
+}
