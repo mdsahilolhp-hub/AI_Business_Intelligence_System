@@ -1,44 +1,76 @@
 import json
 import os
+import requests
 from dotenv import load_dotenv
-from google import genai
-load_dotenv("05_AI/.env")
+
+
 # ============================================================
-# GOOGLE GEMINI API CONFIGURATION
+# AI BUSINESS INSIGHTS GENERATOR
 # ============================================================
 
-# Paste your Google Gemini API key here
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-if not GEMINI_API_KEY:
-    print("❌ GEMINI_API_KEY not found in .env")
-    exit()
+ENV_FILE = "05_AI/.env"
+INPUT_FILE = "05_AI/ai_decision_report.json"
+OUTPUT_FILE = "05_AI/ai_generated_insights.json"
 
-# Create Gemini client
-client = genai.Client(api_key=GEMINI_API_KEY)
-
-# Gemini model
 MODEL_NAME = "gemini-3.6-flash"
 
+load_dotenv(ENV_FILE)
+
 
 # ============================================================
-# LOAD BUSINESS DECISION DATA
+# 1. LOAD GEMINI API KEY
 # ============================================================
 
-input_file = "05_AI/ai_decision_report.json"
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+if not GEMINI_API_KEY:
+    print("ERROR: GEMINI_API_KEY not found in 05_AI/.env")
+    raise SystemExit(1)
+
+GEMINI_API_KEY = GEMINI_API_KEY.strip()
+
+if len(GEMINI_API_KEY) < 20:
+    print("ERROR: GEMINI_API_KEY appears to be invalid or incomplete.")
+    raise SystemExit(1)
+
+
+# ============================================================
+# 2. LOAD BUSINESS DECISION DATA
+# ============================================================
 
 try:
-    with open(input_file, "r", encoding="utf-8") as file:
+
+    with open(
+        INPUT_FILE,
+        "r",
+        encoding="utf-8"
+    ) as file:
+
         decision_data = json.load(file)
 
 except FileNotFoundError:
-    print(f"❌ File not found: {input_file}")
+
+    print(f"ERROR: File not found: {INPUT_FILE}")
     print("Please run decision_engine.py first.")
-    exit()
+    raise SystemExit(1)
+
+except json.JSONDecodeError as error:
+
+    print(f"ERROR: Invalid JSON in {INPUT_FILE}")
+    print(f"Details: {error}")
+    raise SystemExit(1)
 
 
 # ============================================================
-# BUSINESS ANALYSIS PROMPT
+# 3. BUSINESS ANALYSIS PROMPT
 # ============================================================
+
+business_data = json.dumps(
+    decision_data,
+    indent=2,
+    ensure_ascii=False
+)
+
 
 prompt = f"""
 You are a senior Business Intelligence and Decision Support Analyst.
@@ -46,7 +78,7 @@ You are a senior Business Intelligence and Decision Support Analyst.
 Analyze the following business intelligence decision report.
 
 BUSINESS DATA:
-{json.dumps(decision_data, indent=2, ensure_ascii=False)}
+{business_data}
 
 Your task is to produce a professional executive-level business analysis.
 
@@ -90,31 +122,159 @@ ACTIONABLE RECOMMENDATIONS
 
 
 # ============================================================
-# SEND DATA TO GEMINI
+# 4. GEMINI API REQUEST
 # ============================================================
 
-print("\n🤖 Sending business data to Gemini...")
+print()
+print("Sending business data to Gemini...")
 print("=" * 60)
+
+API_URL = (
+    "https://generativelanguage.googleapis.com/"
+    f"v1beta/models/{MODEL_NAME}:generateContent"
+)
+
+headers = {
+    "Content-Type": "application/json",
+    "x-goog-api-key": GEMINI_API_KEY
+}
+
+payload = {
+    "contents": [
+        {
+            "parts": [
+                {
+                    "text": prompt
+                }
+            ]
+        }
+    ]
+}
+
 
 try:
 
-    response = client.models.generate_content(
-        model=MODEL_NAME,
-        contents=prompt
+    response = requests.post(
+        API_URL,
+        headers=headers,
+        json=payload,
+        timeout=120
     )
 
-    ai_analysis = response.text
+except requests.RequestException as error:
 
-except Exception as error:
-
-    print("\n❌ Gemini API Error")
+    print()
+    print("ERROR: Could not connect to Gemini API.")
     print("-" * 60)
-    print(error)
-    exit()
+    print(f"Details: {error}")
+    raise SystemExit(1)
 
 
 # ============================================================
-# SAVE AI GENERATED INSIGHTS
+# 5. HANDLE GEMINI API RESPONSE
+# ============================================================
+
+if response.status_code != 200:
+
+    print()
+    print("ERROR: Gemini API request failed.")
+    print("-" * 60)
+    print(f"HTTP Status: {response.status_code}")
+
+    try:
+
+        error_data = response.json()
+
+        error_message = (
+            error_data
+            .get("error", {})
+            .get("message", "Unknown API error")
+        )
+
+        print(f"Message: {error_message}")
+
+    except ValueError:
+
+        print("Response:")
+        print(response.text[:1000])
+
+    if response.status_code == 401:
+
+        print()
+        print(
+            "Authentication failed. "
+            "Check GEMINI_API_KEY in 05_AI/.env."
+        )
+
+    elif response.status_code == 403:
+
+        print()
+        print(
+            "Access denied. Check API key permissions "
+            "and Gemini API availability."
+        )
+
+    elif response.status_code == 404:
+
+        print()
+        print(
+            f"Model '{MODEL_NAME}' was not found or is not "
+            "available for this API key."
+        )
+
+    raise SystemExit(1)
+
+
+# ============================================================
+# 6. EXTRACT GENERATED TEXT
+# ============================================================
+
+try:
+
+    response_data = response.json()
+
+    candidates = response_data.get(
+        "candidates",
+        []
+    )
+
+    if not candidates:
+
+        print()
+        print("ERROR: Gemini returned no candidates.")
+        print(response_data)
+        raise SystemExit(1)
+
+    parts = (
+        candidates[0]
+        .get("content", {})
+        .get("parts", [])
+    )
+
+    text_parts = [
+        part.get("text", "")
+        for part in parts
+        if part.get("text")
+    ]
+
+    ai_analysis = "\n".join(text_parts).strip()
+
+    if not ai_analysis:
+
+        print()
+        print("ERROR: Gemini returned an empty response.")
+        raise SystemExit(1)
+
+except (ValueError, TypeError, KeyError) as error:
+
+    print()
+    print("ERROR: Could not parse Gemini response.")
+    print(f"Details: {error}")
+    raise SystemExit(1)
+
+
+# ============================================================
+# 7. SAVE AI GENERATED INSIGHTS
 # ============================================================
 
 output = {
@@ -123,29 +283,45 @@ output = {
     "analysis": ai_analysis
 }
 
-output_file = "05_AI/ai_generated_insights.json"
 
-with open(output_file, "w", encoding="utf-8") as file:
-    json.dump(
-        output,
-        file,
-        indent=4,
-        ensure_ascii=False
-    )
+try:
+
+    with open(
+        OUTPUT_FILE,
+        "w",
+        encoding="utf-8"
+    ) as file:
+
+        json.dump(
+            output,
+            file,
+            indent=4,
+            ensure_ascii=False
+        )
+
+except OSError as error:
+
+    print()
+    print("ERROR: Could not save AI insights.")
+    print(f"Details: {error}")
+    raise SystemExit(1)
 
 
 # ============================================================
-# DISPLAY RESULT
+# 8. DISPLAY RESULT
 # ============================================================
 
-print("\n🧠 AI EXECUTIVE ANALYSIS")
+print()
+print("AI EXECUTIVE ANALYSIS")
 print("=" * 60)
 
 print(ai_analysis)
 
-print("\n" + "=" * 60)
-print("📁 AI insights saved successfully!")
-print(f"📄 File: {output_file}")
+print()
+print("=" * 60)
+print("AI insights saved successfully.")
+print(f"File: {OUTPUT_FILE}")
 print("=" * 60)
 
-print("\n✅ GEMINI AI ANALYSIS COMPLETED!")
+print()
+print("GEMINI AI ANALYSIS COMPLETED SUCCESSFULLY")

@@ -1,81 +1,143 @@
 import json
+import os
 
 
-# ==========================================
+# ============================================================
+# AI-POWERED BUSINESS DECISION ENGINE
+# ============================================================
+
+INPUT_FILE = "05_AI/ai_insights_output.json"
+OUTPUT_FILE = "05_AI/ai_decision_report.json"
+
+
+# ============================================================
 # 1. LOAD EXTRACTED BUSINESS DATA
-# ==========================================
+# ============================================================
 
-with open(
-    "05_AI/ai_insights_output.json",
-    "r",
-    encoding="utf-8"
-) as file:
-    data = json.load(file)
+try:
+    with open(
+        INPUT_FILE,
+        "r",
+        encoding="utf-8"
+    ) as file:
+        data = json.load(file)
+
+except FileNotFoundError:
+    print(f"ERROR: Input file not found: {INPUT_FILE}")
+    raise SystemExit(1)
+
+except json.JSONDecodeError as error:
+    print(f"ERROR: Invalid JSON in {INPUT_FILE}")
+    print(f"Details: {error}")
+    raise SystemExit(1)
 
 
-overall = data["overall"]
-categories = data["category_performance"]
-customers = data["top_customers"]
-products = data["top_products"]
-regions = data["regional_performance"]
+overall = data.get("overall", {})
+categories = data.get("category_performance", [])
+customers = data.get("top_customers", [])
+products = data.get("top_products", [])
+regions = data.get("regional_performance", [])
 
 
-# ==========================================
-# 2. INITIALIZE DECISION INSIGHTS
-# ==========================================
+# ============================================================
+# 2. VALIDATE REQUIRED DATA
+# ============================================================
+
+required_overall_fields = [
+    "total_sales",
+    "total_profit",
+    "profit_margin",
+    "total_orders"
+]
+
+missing_fields = [
+    field
+    for field in required_overall_fields
+    if field not in overall
+]
+
+if missing_fields:
+    print(
+        "ERROR: Missing required business metrics: "
+        + ", ".join(missing_fields)
+    )
+    raise SystemExit(1)
+
+
+# ============================================================
+# 3. INITIALIZE DECISION INSIGHTS
+# ============================================================
 
 risks = []
 opportunities = []
-recommendations = []
 
 
-# ==========================================
-# 3. CATEGORY ANALYSIS
-# ==========================================
+# ============================================================
+# 4. CATEGORY ANALYSIS
+# ============================================================
 
-lowest_margin_category = min(
-    categories,
-    key=lambda x: x["profit_margin"]
-)
+if categories:
 
-highest_margin_category = max(
-    categories,
-    key=lambda x: x["profit_margin"]
-)
+    lowest_margin_category = min(
+        categories,
+        key=lambda x: x.get("profit_margin", 0)
+    )
 
+    highest_margin_category = max(
+        categories,
+        key=lambda x: x.get("profit_margin", 0)
+    )
 
-if lowest_margin_category["profit_margin"] < 25:
-    risks.append({
-        "topic": "Margin Risk",
+    lowest_category_margin = lowest_margin_category.get(
+        "profit_margin",
+        0
+    )
+
+    highest_category_margin = highest_margin_category.get(
+        "profit_margin",
+        0
+    )
+
+    # --------------------------------------------------------
+    # Margin Risk
+    # --------------------------------------------------------
+
+    if lowest_category_margin < 25:
+
+        risks.append({
+            "topic": "Margin Risk",
+            "finding": (
+                f"{lowest_margin_category['Category']} has the "
+                f"lowest profit margin at "
+                f"{lowest_category_margin}%."
+            ),
+            "recommendation": (
+                "Review pricing, discounts, supplier costs "
+                "and product-level profitability."
+            )
+        })
+
+    # --------------------------------------------------------
+    # High Margin Opportunity
+    # --------------------------------------------------------
+
+    opportunities.append({
+        "topic": "High-Margin Opportunity",
         "finding": (
-            f"{lowest_margin_category['Category']} has the "
-            f"lowest profit margin at "
-            f"{lowest_margin_category['profit_margin']}%."
+            f"{highest_margin_category['Category']} has the "
+            f"highest profit margin at "
+            f"{highest_category_margin}%."
         ),
         "recommendation": (
-            "Review pricing, discounts, supplier costs "
-            "and product-level profitability."
+            "Prioritize high-margin products and expand "
+            "profitable offerings."
         )
     })
 
 
-opportunities.append({
-    "topic": "High-Margin Opportunity",
-    "finding": (
-        f"{highest_margin_category['Category']} has the "
-        f"highest profit margin at "
-        f"{highest_margin_category['profit_margin']}%."
-    ),
-    "recommendation": (
-        "Prioritize high-margin products and expand "
-        "profitable offerings."
-    )
-})
-
-
-# ==========================================
-# 4. PRODUCT ANALYSIS
-# ==========================================
+# ============================================================
+# 5. PRODUCT ANALYSIS
+# ============================================================
 
 if products:
 
@@ -83,15 +145,29 @@ if products:
 
     highest_product_margin = max(
         products,
-        key=lambda x: x["profit_margin"]
+        key=lambda x: x.get("profit_margin", 0)
     )
+
+    top_product_sales = top_product.get(
+        "sales",
+        0
+    )
+
+    highest_product_margin_value = highest_product_margin.get(
+        "profit_margin",
+        0
+    )
+
+    # --------------------------------------------------------
+    # Top Product
+    # --------------------------------------------------------
 
     opportunities.append({
         "topic": "Top Product",
         "finding": (
             f"{top_product['Product_Name']} generates the "
             f"highest sales among the top products at "
-            f"₹{top_product['sales']:,.2f}."
+            f"${top_product_sales:,.2f}."
         ),
         "recommendation": (
             "Maintain availability and prioritize this "
@@ -99,11 +175,15 @@ if products:
         )
     })
 
+    # --------------------------------------------------------
+    # Product Profitability
+    # --------------------------------------------------------
+
     opportunities.append({
         "topic": "Product Profitability",
         "finding": (
             f"{highest_product_margin['Product_Name']} has "
-            f"a {highest_product_margin['profit_margin']}% "
+            f"a {highest_product_margin_value}% "
             f"profit margin."
         ),
         "recommendation": (
@@ -113,19 +193,24 @@ if products:
     })
 
 
-# ==========================================
-# 5. CUSTOMER ANALYSIS
-# ==========================================
+# ============================================================
+# 6. CUSTOMER ANALYSIS
+# ============================================================
 
 if customers:
 
     top_customer = customers[0]
 
+    top_customer_sales = top_customer.get(
+        "sales",
+        0
+    )
+
     opportunities.append({
         "topic": "High-Value Customer",
         "finding": (
             f"{top_customer['Customer_Name']} generated "
-            f"₹{top_customer['sales']:,.2f} in sales."
+            f"${top_customer_sales:,.2f} in sales."
         ),
         "recommendation": (
             "Prioritize retention, repeat purchases "
@@ -134,35 +219,55 @@ if customers:
     })
 
 
-# ==========================================
-# 6. REGIONAL ANALYSIS
-# ==========================================
+# ============================================================
+# 7. REGIONAL ANALYSIS
+# ============================================================
 
 valid_regions = [
-    region for region in regions
-    if region["Region"] not in ("Unknown", None, "")
+    region
+    for region in regions
+    if region.get("Region") not in (
+        "Unknown",
+        None,
+        ""
+    )
 ]
+
 
 if valid_regions:
 
     lowest_region_margin = min(
         valid_regions,
-        key=lambda x: x["profit_margin"]
+        key=lambda x: x.get("profit_margin", 0)
     )
 
     highest_region_margin = max(
         valid_regions,
-        key=lambda x: x["profit_margin"]
+        key=lambda x: x.get("profit_margin", 0)
     )
 
-    if lowest_region_margin["profit_margin"] < 30:
+    lowest_region_margin_value = lowest_region_margin.get(
+        "profit_margin",
+        0
+    )
+
+    highest_region_margin_value = highest_region_margin.get(
+        "profit_margin",
+        0
+    )
+
+    # --------------------------------------------------------
+    # Regional Margin Risk
+    # --------------------------------------------------------
+
+    if lowest_region_margin_value < 30:
 
         risks.append({
             "topic": "Regional Margin Risk",
             "finding": (
                 f"{lowest_region_margin['Region']} has the "
                 f"lowest regional profit margin at "
-                f"{lowest_region_margin['profit_margin']}%."
+                f"{lowest_region_margin_value}%."
             ),
             "recommendation": (
                 "Investigate regional pricing, costs, "
@@ -170,12 +275,16 @@ if valid_regions:
             )
         })
 
+    # --------------------------------------------------------
+    # Regional Opportunity
+    # --------------------------------------------------------
+
     opportunities.append({
         "topic": "Regional Opportunity",
         "finding": (
             f"{highest_region_margin['Region']} has the "
             f"highest valid regional margin at "
-            f"{highest_region_margin['profit_margin']}%."
+            f"{highest_region_margin_value}%."
         ),
         "recommendation": (
             "Study the regional sales mix and replicate "
@@ -184,11 +293,13 @@ if valid_regions:
     })
 
 
-# ==========================================
-# 7. OVERALL BUSINESS HEALTH
-# ==========================================
+# ============================================================
+# 8. OVERALL BUSINESS HEALTH
+# ============================================================
 
-if overall["profit_margin"] >= 30:
+profit_margin = overall["profit_margin"]
+
+if profit_margin >= 30:
 
     overall_status = "Healthy"
 
@@ -197,106 +308,159 @@ else:
     overall_status = "Needs Attention"
 
 
-# ==========================================
-# 8. CREATE DECISION REPORT
-# ==========================================
+# ============================================================
+# 9. CREATE RECOMMENDATION LIST
+# ============================================================
+
+recommendations = [
+    item["recommendation"]
+    for item in risks + opportunities
+]
+
+
+# ============================================================
+# 10. CREATE DECISION REPORT
+# ============================================================
 
 decision_report = {
 
     "business_health": {
+
         "status": overall_status,
+
         "total_sales": overall["total_sales"],
+
         "total_profit": overall["total_profit"],
+
         "profit_margin": overall["profit_margin"],
+
         "total_orders": overall["total_orders"]
+
     },
 
     "risks": risks,
 
     "opportunities": opportunities,
 
-    "recommendations": [
-        item["recommendation"]
-        for item in risks + opportunities
-    ]
+    "recommendations": recommendations
+
 }
 
 
-# ==========================================
-# 9. SAVE DECISION REPORT
-# ==========================================
+# ============================================================
+# 11. SAVE DECISION REPORT
+# ============================================================
 
-with open(
-    "05_AI/ai_decision_report.json",
-    "w",
-    encoding="utf-8"
-) as file:
+try:
 
-    json.dump(
-        decision_report,
-        file,
-        indent=4,
-        ensure_ascii=False
-    )
+    output_directory = os.path.dirname(OUTPUT_FILE)
+
+    if output_directory:
+        os.makedirs(
+            output_directory,
+            exist_ok=True
+        )
+
+    with open(
+        OUTPUT_FILE,
+        "w",
+        encoding="utf-8"
+    ) as file:
+
+        json.dump(
+            decision_report,
+            file,
+            indent=4,
+            ensure_ascii=False
+        )
+
+except OSError as error:
+
+    print("ERROR: Could not save decision report.")
+    print(f"Details: {error}")
+
+    raise SystemExit(1)
 
 
-# ==========================================
-# 10. DISPLAY RESULTS
-# ==========================================
+# ============================================================
+# 12. DISPLAY RESULTS
+# ============================================================
 
-print("\n" + "=" * 60)
-print("🤖 AI-POWERED DECISION ENGINE")
+print()
+print("=" * 60)
+print("AI-POWERED DECISION ENGINE")
 print("=" * 60)
 
-print(
-    f"\nBusiness Health: {overall_status}"
-)
-
-print(
-    f"Sales: ₹{overall['total_sales']:,.2f}"
-)
-
-print(
-    f"Profit: ₹{overall['total_profit']:,.2f}"
-)
-
-print(
-    f"Margin: {overall['profit_margin']}%"
-)
+print()
+print(f"Business Health : {overall_status}")
+print(f"Sales           : ${overall['total_sales']:,.2f}")
+print(f"Profit          : ${overall['total_profit']:,.2f}")
+print(f"Profit Margin   : {overall['profit_margin']}%")
+print(f"Total Orders    : {overall['total_orders']:,}")
 
 
-print("\n🔴 BUSINESS RISKS")
+# ============================================================
+# 13. DISPLAY BUSINESS RISKS
+# ============================================================
+
+print()
+print("BUSINESS RISKS")
 print("-" * 60)
 
 if risks:
 
     for risk in risks:
 
-        print(f"\n• {risk['topic']}")
-        print(f"  Finding: {risk['finding']}")
-        print(f"  Recommendation: {risk['recommendation']}")
+        print()
+        print(f"- {risk['topic']}")
+        print(f"  Finding        : {risk['finding']}")
+        print(
+            f"  Recommendation : "
+            f"{risk['recommendation']}"
+        )
 
 else:
 
     print("No major risks detected.")
 
 
-print("\n🟢 BUSINESS OPPORTUNITIES")
+# ============================================================
+# 14. DISPLAY BUSINESS OPPORTUNITIES
+# ============================================================
+
+print()
+print("BUSINESS OPPORTUNITIES")
 print("-" * 60)
 
-for opportunity in opportunities:
+if opportunities:
 
-    print(f"\n• {opportunity['topic']}")
-    print(f"  Finding: {opportunity['finding']}")
-    print(
-        f"  Recommendation: "
-        f"{opportunity['recommendation']}"
-    )
+    for opportunity in opportunities:
+
+        print()
+        print(f"- {opportunity['topic']}")
+        print(
+            f"  Finding        : "
+            f"{opportunity['finding']}"
+        )
+        print(
+            f"  Recommendation : "
+            f"{opportunity['recommendation']}"
+        )
+
+else:
+
+    print("No major opportunities detected.")
 
 
-print("\n" + "=" * 60)
-print("📁 Decision report saved:")
-print("05_AI/ai_decision_report.json")
+# ============================================================
+# 15. COMPLETION MESSAGE
+# ============================================================
+
+print()
+print("=" * 60)
+print("Decision report saved successfully.")
+print(f"File: {OUTPUT_FILE}")
 print("=" * 60)
 
-print("\n✅ DECISION ENGINE COMPLETED!")
+print()
+print("DECISION ENGINE COMPLETED SUCCESSFULLY")

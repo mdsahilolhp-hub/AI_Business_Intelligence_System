@@ -154,12 +154,6 @@
     ],
     "regional_performance": [
         {
-            "Region": "Unknown",
-            "sales": 161749.21,
-            "profit": 52083.14,
-            "profit_margin": 32.2
-        },
-        {
             "Region": "West",
             "sales": 15500370.91,
             "profit": 4640325.65,
