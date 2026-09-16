@@ -75,3 +75,21 @@ AI-Generated Business Insights
       │
       ▼
 Executive Decision Summary
+
+---
+
+## Dashboard Preview
+
+### Executive Dashboard
+
+![Executive Dashboard](08_Assets/executive_dashboard.png)
+
+### Product & Customer Analysis
+
+![Product & Customer Analysis](08_Assets/product_customer_analysis.png)
+
+### AI Executive Decision Summary
+
+![AI Executive Summary](08_Assets/ai_executive_summary.png)
+
+---
